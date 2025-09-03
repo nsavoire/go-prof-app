@@ -18,11 +18,11 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
+	sqltrace "github.com/DataDog/dd-trace-go/contrib/database/sql/v2"
+	httptrace "github.com/DataDog/dd-trace-go/contrib/julienschmidt/httprouter/v2"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
+	"github.com/DataDog/dd-trace-go/v2/profiler"
 	"github.com/jackc/pgx/v4/stdlib"
-	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
-	httptrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/julienschmidt/httprouter"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
-	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 )
 
 var (
@@ -61,13 +61,13 @@ func run() error {
 		serviceF       = flag.String("dd.service", envWithDefault("DD_SERVICE", "go-prof-app"), "Name of the service.")
 		envF           = flag.String("dd.env", envWithDefault("DD_ENV", "dev"), "Name of the environment the app is running in")
 		powDifficultyF = flag.Int("powDifficulty", 4, "Difficulty level for pow")
-		ddKey          = flag.String("dd.key", "", "API key for dd-trace-go agentless profile uploading")
-		ddPeriod       = flag.Duration("dd.period", profiler.DefaultPeriod, "Profiling period for dd-trace-go")
-		ddCPUDuration  = flag.Duration("dd.cpuDuration", profiler.DefaultDuration, "CPU duration for dd-trace-go")
-		ddProfiler     = flag.Bool("dd.profiler", true, "Enable dd-trace-go profiler")
-		ddTracer       = flag.Bool("dd.tracer", true, "Enable dd-trace-go tracer")
-		traceF         = flag.String("trace", "", "Capture execution trace to file.")
-		versionF       = flag.Bool("version", false, "Print version and exit")
+		// ddKey          = flag.String("dd.key", "", "API key for dd-trace-go agentless profile uploading")
+		ddPeriod      = flag.Duration("dd.period", profiler.DefaultPeriod, "Profiling period for dd-trace-go")
+		ddCPUDuration = flag.Duration("dd.cpuDuration", profiler.DefaultDuration, "CPU duration for dd-trace-go")
+		ddProfiler    = flag.Bool("dd.profiler", true, "Enable dd-trace-go profiler")
+		ddTracer      = flag.Bool("dd.tracer", true, "Enable dd-trace-go tracer")
+		traceF        = flag.String("trace", "", "Capture execution trace to file.")
+		versionF      = flag.Bool("version", false, "Print version and exit")
 	)
 	flag.Func("dd.profiles", `Comma separated list of dd-trace-go profiles to enable (default "cpu,heap")`, func(val string) error {
 		profiles = nil
@@ -140,14 +140,14 @@ func run() error {
 			profiler.WithStatsd(statsd),
 			profiler.WithTags("go_version:" + runtime.Version()),
 		}
-		if *ddKey != "" {
-			log.Printf("Using agentless uploading")
-			profilerOptions = append(
-				profilerOptions,
-				profiler.WithAPIKey(*ddKey),
-				profiler.WithAgentlessUpload(),
-			)
-		}
+		// if *ddKey != "" {
+		// 	log.Printf("Using agentless uploading")
+		// 	profilerOptions = append(
+		// 		profilerOptions,
+		// 		profiler.WithAPIKey(*ddKey),
+		// 		profiler.WithAgentlessUpload(),
+		// 	)
+		// }
 		if err := profiler.Start(profilerOptions...); err != nil {
 			return err
 		}
